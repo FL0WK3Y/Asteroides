@@ -3,9 +3,19 @@ from pygame import Vector2
 import random
 from pygame.transform import rotozoom
 import os
+# this class is so that when the ship goes off screen it raps around to the other side 
+def wrap_position(position, screen):
+    x, y = position 
+    w, h = screen.get_size()
+    return Vector2(x % w , y % h)
 
 
-
+def blit_rotated(position,image, forward,screen):
+    angle= forward.angle_to(Vector2(0,-1))
+    rotated_surface = rotozoom(image, angle,1.0)
+    rotated_surface_size = Vector2(rotated_surface.get_size())
+    blit_position= position - rotated_surface_size//2
+    screen.blit(rotated_surface, blit_position)
 
 # this class creates the ship
 class Ship:
@@ -46,14 +56,12 @@ class Ship:
             #self.bullets.append(Bullet(self.position,self.forward * 1.1))
             
     def draw(self,screen):
+       # this is a instance of the wrap_position to make the ship goes of the screen it raps around to the other side 
+        self.position =wrap_position(self.position, screen)
         # this block of code makes the ship rotate 
-        angle= self.forward.angle_to(Vector2(0,-1))
-        rotated_surface = rotozoom(self.image, angle,1.0)
-        rotated_surface_size = Vector2(rotated_surface.get_size())
-        blit_position= self.position - rotated_surface_size//2
-        screen.blit(rotated_surface, blit_position)
-# this class creates the Asteroid
+        blit_rotated(self.position, self.image, self.forward, screen)
 
+# this class creates the Bullets
 class Bullet:
     def __init__(self, position, velocity):
         self.position = position
@@ -65,7 +73,7 @@ class Bullet:
     def draw(self, screen):
         pygame.draw.rect(screen,(255,0,0),[self.position.x, self.position.y, 5,5])
 
-
+# this class creates the Asteroid
 class Asteroid:
     def __init__(self, position):
         self.position = Vector2(position)
@@ -77,17 +85,18 @@ class Asteroid:
         self.position+= self.velocity
        
         # this make sure that the asteriods always returns back to the screen if they leave in the x axis. 
-        
-        if self.position.x < out_of_bounce[0] or self.position.x > out_of_bounce[2]:
-            self.velocity.x *= -1
+        #if self.position.x < out_of_bounce[0] or self.position.x > out_of_bounce[2]:
+        #    self.velocity.x *= -1
          
-         # this make sure that the asteriods always returns back to the screen if they leave in the y axis. 
-
-        if self.position.y < out_of_bounce[1] or self.position.y < out_of_bounce[3]:
-            self.velocity.y *= -1
+        # this make sure that the asteriods always returns back to the screen if they leave in the y axis. 
+        #if self.position.y < out_of_bounce[1] or self.position.y < out_of_bounce[3]:
+        #    self.velocity.y *= -1
     
     def draw(self,screen):
-        screen.blit(self.image,self.position)
+        # this is a instance of the wrap_position so that when the Asteroid goes of the screen they rap around to the other side 
+        self.position =wrap_position(self.position, screen)
+        blit_rotated(self.position, self.image, self.velocity, screen)
+
 
 pygame.init()
 screen = pygame.display.set_mode((800,800))
