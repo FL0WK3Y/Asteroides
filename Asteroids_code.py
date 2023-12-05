@@ -79,7 +79,7 @@ class Asteroid:
         self.position = Vector2(position)
         self.velocity = Vector2(random.randint(-3,3),random.randint(-3,3))
         self.image= pygame.image.load('/Users/gregorirodriguez/Desktop/Games/Asteroids/images/asteroid1.png')
-    
+        self.radius = self.image.get_width()//2
     #this updates the velocity of the asteriod
     def update(self):
         self.position+= self.velocity
@@ -96,7 +96,11 @@ class Asteroid:
         # this is a instance of the wrap_position so that when the Asteroid goes of the screen they rap around to the other side 
         self.position =wrap_position(self.position, screen)
         blit_rotated(self.position, self.image, self.velocity, screen)
-
+    #this is collision detection 
+    def hit(self, position):
+        if self.position.distance_to(position)<= self.radius:
+            return True
+        return False
 
 pygame.init()
 screen = pygame.display.set_mode((800,800))
@@ -131,10 +135,30 @@ while not game_over:
     for a in asteroids:
         a.update()
         a.draw(screen)
+    
+    deadBullets = []
+    deadAsteroids = []
     # this updates the bullets that the ship is fireing on the game window
     for b in ship.bullets:
         b.update()
         b.draw(screen)
+        if b.position.x < out_of_bounce[0] or b.position.x > out_of_bounce[2] or b.position.y < out_of_bounce[1] or b.position.y > out_of_bounce[3] :
+            if not deadBullets.__contains__(b):
+                deadBullets.append(b)
+
+        for a in asteroids:
+            if a.hit(b.position):
+                if not deadBullets.__contains__(b):
+                    deadBullets.append(b)
+                if not deadAsteroids.__contains__(a):   
+                    deadAsteroids.append(a)
+
+    for b in deadBullets:
+        ship.bullets.remove(b)
+
+    for a in deadAsteroids:
+        asteroids.remove(a)
+        
 
 
     pygame.display.update()
