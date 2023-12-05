@@ -3,6 +3,10 @@ from pygame import Vector2
 import random
 from pygame.transform import rotozoom
 import os
+
+
+
+
 # this class creates the ship
 class Ship:
     def __init__(self, position):
@@ -10,6 +14,9 @@ class Ship:
         self.image= pygame.image.load('/Users/gregorirodriguez/Desktop/Games/Asteroids/images/ship.png')
         self.forward = Vector2(0,-1)
         self.bullets = []
+        self.can_shoot = 0
+        self.drift = (0,0)
+
 
     
     
@@ -17,15 +24,24 @@ class Ship:
         is_key_pressed = pygame.key.get_pressed()
         if is_key_pressed[pygame.K_UP]:
             self.position += self.forward
+            self.drift = (self.drift + self.forward)/1.6
         if is_key_pressed[pygame.K_LEFT]:
         #this line makes the ship rotate to the left
             self.forward = self.forward.rotate(-1)
         # this line makes the ship rotate to the right
         if is_key_pressed[pygame.K_RIGHT]:
             self.forward = self.forward.rotate(1)
-        if is_key_pressed [pygame.K_SPACE]:
+        if is_key_pressed [pygame.K_SPACE] and self.can_shoot == 0 :
             # this code is for when the bullet is created "fired" and we need to pass the position of the ship and the direction the bullet is going 
             self.bullets.append(Bullet(Vector2(self.position),self.forward * 10))
+            # this is the amount of second you need to wait before a new bullet can be fired 
+            self.can_shoot= 400
+        self.position+= self.drift
+        if self.can_shoot >0 :
+            self.can_shoot -= clock.get_time()
+        else:
+            self.can_shoot = 0
+
             #the code below make the ship boost foward because in python everything is a "pointer"  
             #self.bullets.append(Bullet(self.position,self.forward * 1.1))
             
